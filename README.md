@@ -21,7 +21,7 @@ This is the first step in building a full **DevOps/SRE portfolio project**, whic
 ---
 
 ## 📁 Project Structure
-
+```bash
 django-crud-platform/
 ├── config/
 ├── tasks/
@@ -31,7 +31,7 @@ django-crud-platform/
 ├── manage.py
 └── .env (not committed)
 
-
+```
 ---
 
 ## 🚀 Features (Day 1)
@@ -68,7 +68,9 @@ SECRET_KEY=your_secret_key
 ```bash
 docker compose up --build
 ```
+---
 ## 🌐 API Endpoint
+
 | Method | Endpoint          | Description        |
 |--------|------------------|--------------------|
 | GET    | /api/tasks/      | List all tasks     |
@@ -95,8 +97,9 @@ docker compose up --build
 - Production hardening
 
 ---
----
 
 ## 🚀 Goal
 
 This project evolves into a full production-grade DevOps system using Kubernetes, CI/CD pipelines, and observability tools.
+
+---
