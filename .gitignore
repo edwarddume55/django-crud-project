@@ -1,5 +1,58 @@
-.env
-venv/
+# ------------------------
+# Python
+# ------------------------
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environment
+venv/
+.env/
+.venv/
+
+# Environment variables
+.env
+.env.*
+
+# Django
+*.log
 db.sqlite3
+media/
+staticfiles/
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ------------------------
+# OS files
+# ------------------------
+.DS_Store
+Thumbs.db
+
+# ------------------------
+# Docker
+# ------------------------
+docker-compose.override.yml
+
+# ------------------------
+# Kubernetes / Helm (optional)
+# ------------------------
+*.kubeconfig
+
+# ------------------------
+# Testing / coverage
+# ------------------------
+.coverage
+htmlcov/
+.pytest_cache/
+
+# ------------------------
+# Build artifacts
+# ------------------------
+dist/
+build/
+*.egg-info/
