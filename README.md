@@ -1,4 +1,4 @@
-# Django CRUD Platform (Day 1 - Docker Setup)
+# Django CRUD Platform (DevOps/SRE Project)
 
 ## 📌 Project Overview
 
