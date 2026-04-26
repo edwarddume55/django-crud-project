@@ -19,6 +19,7 @@ It will continue evolving into a full production-grade platform with CI/CD, moni
 - Docker Compose
 - Kubernetes (Minikube)
 - NGINX Ingress Controller
+- GitHub Actions (CI/CD)
 - Python 3.11
 
 ---
@@ -34,6 +35,8 @@ django-crud-platform/
 │   ├── ingress.yaml
 │   ├── configmap.yaml
 │   └── secret.yaml
+├── .github/workflows/
+│   └── ci-cd.yml
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
@@ -64,6 +67,13 @@ django-crud-platform/
 - Readiness & Liveness Probes
 - Ingress Controller (NGINX)
 - Custom domain routing (django.local)
+
+## 🟢 CI/CD (Automation)
+- GitHub Actions pipeline
+- Automated Docker image build on push
+- Image tagging using commit SHA
+- Push to Docker Hub registry
+- Basic application validation (Django checks)
 
 ## 🟢 DevOps Debugging Experience
 - Fixed CrashLoopBackOff issues
@@ -126,6 +136,26 @@ Add:
 ```
 --- 
 
+### 🔄 CI/CD Pipeline
+
+The project includes a GitHub Actions pipeline that automatically:
+
+- Runs Django checks
+- Builds a Docker image
+- Tags the image using commit SHA
+- Pushes the image to Docker Hub
+
+### 📦 Trigger
+```bash
+    git push origin main
+```
+
+### 📍 Pipeline Location
+```bash
+    .github/workflows/ci-cd.yml
+```
+---
+
 ## 🌐 API Endpoint
 
 | Method | Endpoint          | Description       |
@@ -146,16 +176,13 @@ Add:
 - Kubernetes deployment
 - Service + ConfigMap + Secret
 - Ingress routing
+- CI/CD pipeline (GitHub Actions)
+- Docker image registry integration
 - Debugged real production-like failures
 
 ---
 
 ## 🔜 Next Steps
-
-### 🚀 CI/CD Pipeline (GitHub Actions)
-- Automated build
-- Docker image push
-- Kubernetes deployment automation
 
 ### 📊 Observability
 - Prometheus (metrics)
@@ -167,6 +194,10 @@ Add:
 - Resource limits
 - RBAC
 - Helm charts
+
+### 🚀 Advanced CI/CD
+- Kubernetes auto-deployment
+- Helm-based releases
 
 ---
 
@@ -181,5 +212,7 @@ From application → containerization → Kubernetes → networking → CI/CD �
 - Kubernetes workload debugging (CrashLoopBackOff, 503 errors)
 - Service discovery and networking
 - Ingress routing and domain mapping
+- CI/CD pipeline automation with GitHub Actions
+- Docker image lifecycle and registry management
 - Environment variable management in clusters
 - Production-style architecture thinking

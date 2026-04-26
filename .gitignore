@@ -56,3 +56,5 @@ htmlcov/
 dist/
 build/
 *.egg-info/
+
+token.txt
