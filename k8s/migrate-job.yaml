@@ -2,35 +2,27 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: django-migrate
-
 spec:
   template:
     spec:
       restartPolicy: Never
-
       containers:
         - name: migrate
-          image: django-app:1.0
+          image: edwarddume55/django-app:latest
           command: ["python", "manage.py", "migrate"]
 
           env:
             - name: POSTGRES_DB
               valueFrom:
-                configMapKeyRef:
-                  name: django-config
+                secretKeyRef:
+                  name: django-secret
                   key: POSTGRES_DB
 
             - name: POSTGRES_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: django-config
-                  key: POSTGRES_HOST
+              value: postgres
 
             - name: POSTGRES_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: django-config
-                  key: POSTGRES_PORT
+              value: "5432"
 
             - name: POSTGRES_USER
               valueFrom:
