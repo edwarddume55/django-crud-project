@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "django-app.fullname" . }}
+  labels:
+    {{- include "django-app.labels" . | nindent 4 }}
+
+spec:
+  replicas: {{ .Values.replicaCount }}
+
+  selector:
+    matchLabels:
+      {{- include "django-app.selectorLabels" . | nindent 6 }}
+
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      labels:
+        {{- include "django-app.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: django
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+        ports:
+          - containerPort: 8000
+
+        command: ["gunicorn"]
+        args:
+          - "config.wsgi:application"
+          - "--bind"
+          - "0.0.0.0:8000"
+
+        env:
+          - name: POSTGRES_DB
+            value: "{{ .Values.env.POSTGRES_DB }}"
+
+          - name: POSTGRES_HOST
+            value: "{{ .Values.env.POSTGRES_HOST }}"
+
+          - name: POSTGRES_PORT
+            value: "{{ .Values.env.POSTGRES_PORT }}"
+
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.secretName }}
+                key: POSTGRES_USER
+
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.secretName }}
+                key: POSTGRES_PASSWORD
+
+        readinessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 20
+          timeoutSeconds: 2
+          periodSeconds: 5
+          failureThreshold: 6
+
+        livenessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 30
+          timeoutSeconds: 2
+          periodSeconds: 10
+          failureThreshold: 3

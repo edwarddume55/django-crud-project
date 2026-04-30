@@ -1,0 +1,39 @@
+# Patterns to ignore when building packages.
+# This supports shell glob matching, relative path matching, and
+# negation (prefixed with !). Only one pattern per line.
+.DS_Store
+# Virtual environment
+venv/
+env/
+.env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Local development
+*.local
+*.log

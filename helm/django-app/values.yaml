@@ -1,0 +1,34 @@
+replicaCount: 2
+
+image:
+  repository: edwarddume55/django-app
+  tag: "latest"
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+env:
+  POSTGRES_DB: tasksdb
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: "5432"
+
+secretName: django-secret
+
+secrets:
+  POSTGRES_USER: admin
+  POSTGRES_PASSWORD: admin123
+
+postgres:
+  db: tasksdb
+  user: admin
+  password: admin123
+
+ingress:
+  enabled: true
+  host: django-app.local
+
+postgresql:
+  enabled: false
