@@ -2,13 +2,17 @@ replicaCount: 2
 
 image:
   repository: edwarddume55/django-app
-  tag: "latest"
+  tag: "metrics"
   pullPolicy: Always
 
 service:
   type: ClusterIP
   port: 80
   targetPort: 8000
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
 
 env:
   POSTGRES_DB: tasksdb

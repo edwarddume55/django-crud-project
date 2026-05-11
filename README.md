@@ -4,9 +4,7 @@
 
 This is a production-style Django REST API for a task management system, built as part of a DevOps/SRE learning journey.
 
-The project has evolved beyond basic Docker setup into a Kubernetes-deployed microservice architecture with PostgreSQL, Ingress routing, Helm charts, and real-world debugging scenarios.
-
-It will continue evolving into a full production-grade platform with CI/CD, monitoring, and observability.
+The project has evolved beyond basic Docker setup into a Kubernetes-deployed microservice architecture with PostgreSQL, Ingress routing, Helm charts, and real-world debugging scenarios. It now includes **full observability** with Prometheus metrics and Grafana dashboards.
 
 ---
 
@@ -19,6 +17,8 @@ It will continue evolving into a full production-grade platform with CI/CD, moni
 - Kubernetes (Minikube)
 - NGINX Ingress Controller
 - Helm Charts
+- Prometheus (Metrics Collection)
+- Grafana (Visualization)
 - GitHub Actions (CI/CD)
 - Python 3.11
 
@@ -35,7 +35,8 @@ django-crud-platform/
 │   ├── service.yaml
 │   ├── ingress.yaml
 │   ├── configmap.yaml
-│   └── secret.yaml
+│   ├── secret.yaml
+│   └── postgres-deployment.yaml
 ├── helm/                   # Helm charts
 │   └── django-app/
 │       ├── templates/
@@ -45,6 +46,9 @@ django-crud-platform/
 │       │   └── secret.yaml
 │       ├── Chart.yaml
 │       └── values.yaml
+├── monitoring/             # Prometheus/Grafana configs
+│   ├── django-servicemonitor.yaml
+│   └── django-dashboard.json
 ├── .github/workflows/
 │   └── ci-cd.yml
 ├── Dockerfile
@@ -65,12 +69,14 @@ django-crud-platform/
 - Task management endpoints
 - PostgreSQL integration
 - Health check endpoint (/health/)
+- Prometheus metrics endpoint (/metrics)
 
 ## 🟢 Containerization
 
 - Dockerized Django application
 - Docker Compose setup with PostgreSQL
 - Environment variable configuration
+- Multi-stage build optimization
 
 ## 🟢 Kubernetes (Production Simulation)
 
@@ -82,6 +88,21 @@ django-crud-platform/
 - Ingress Controller (NGINX)
 - Custom domain routing (django.local)
 - Helm Chart packaging and management
+
+## 🟢 Observability (Prometheus + Grafana)
+- Prometheus metrics collection (cluster + application)
+- Grafana dashboards for visualization
+- Django application metrics:
+    - HTTP request rate & latency
+    - Response status codes
+    - Database query metrics
+
+- Kubernetes infrastructure metrics:
+    - CPU & Memory usage
+    - Pod status & restarts
+    - Node health
+- ServiceMonitor for automatic metrics discovery
+- Pre-built SRE dashboard with key panels
 
 ## 🟢 CI/CD (Automation)
 
@@ -125,7 +146,7 @@ DEBUG=True
 SECRET_KEY=your_secret_key
 ```
 
-### 3. Run with Docker
+### 3. Run with Docker Compose
 
 ```bash
 docker compose up --build
@@ -149,7 +170,20 @@ docker compose up --build
     minikube addons enable ingress
 ```
 
-### 3. Deploy PostgreSQL manually (or let Helm manage it)
+### 3. Install Prometheus Stack (Observability)
+```bash
+    # Add Helm repo
+    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+    helm repo update
+
+    # Install kube-prometheus-stack
+    helm install monitoring prometheus-community/kube-prometheus-stack
+
+    # Verify pods are running
+    kubectl get pods
+    # Should see: prometheus, grafana, alertmanager
+```
+### 4. Deploy PostgreSQL manually (or let Helm manage it)
 
 ```bash
     # Manual PostgreSQL (for control)
@@ -158,16 +192,13 @@ docker compose up --build
 
 ```
 
-### 4. Deploy Django app with Helm
+### 5. Deploy Django app with Helm
 
 ```bash
-    cd helm/django-app
+   cd helm/django-app
 
-    # Remove any existing release
-    helm uninstall django-app --ignore-not-found=true
-
-    # Install with Helm
-    helm install django-app .
+    # Install with metrics-enabled image
+    helm install django-app . --set image.tag=metrics
 
     # Verify deployment
     kubectl get pods
@@ -175,7 +206,17 @@ docker compose up --build
     kubectl get ingress
 ```
 
-### 5. Configure hosts file (Windows/macOS/Linux)
+### 6. Configure Prometheus to scrape Django
+```bash
+    # Create ServiceMonitor for Django
+    kubectl apply -f monitoring/django-servicemonitor.yaml
+
+    # Verify it's discovered
+    kubectl get servicemonitor
+
+```
+
+### 7. Configure hosts file (Windows/macOS/Linux)
 
 Add to /etc/hosts (Linux/macOS) or C:\Windows\System32\drivers\etc\hosts (Windows):
 
@@ -191,13 +232,13 @@ Get Minikube IP if needed:
 
 ---
 
-### 6. Run database migrations
+### 8. Run database migrations
 
 ```bash
     kubectl apply -f k8s/migrate-job.yaml
 ```
 
-### 7. Create superuser (optional)
+### 9. Create superuser (optional)
 
 ```bash
     kubectl exec -it deployment/django-app -- python manage.py createsuperuser
@@ -221,6 +262,7 @@ Via Ingress (Production-like)
 http://django-app.local/api/tasks/
 http://django-app.local/admin/
 http://django-app.local/health/
+http://django-app.local/metrics 
 ```
 
 Via Minikube Service
@@ -230,6 +272,33 @@ minikube service django-app
 ```
 
 ---
+
+## 📊 Observability Stack
+### Access Prometheus UI
+```bash 
+kubectl port-forward svc/monitoring-kube-prometheus-prometheus 9090
+```
+Open: http://localhost:9090
+#### Try these queries:
+- django_http_requests_total_by_method_total
+- django_db_queries_total
+- rate(container_cpu_usage_seconds_total[5m])
+
+### Access Grafana UI
+```bash
+    # Get Grafana admin password
+    kubectl get secret monitoring-grafana -o jsonpath="{.data.admin-password}" | base64 --decode
+
+    # Port-forward Grafana
+    kubectl port-forward svc/monitoring-grafana 3000:80
+```
+Open: http://localhost:3000 (Username: admin, Password: from above)
+
+### Key Dashboard Panels
+- CPU Usage -	rate(container_cpu_usage_seconds_total[5m])	- Cluster resource monitoring
+- Memory Usage - container_memory_usage_bytes -	Memory utilization
+- Request Rate - sum(rate(django_http_requests_total_by_method_total[5m])) - API traffic
+- Request Latency - histogram_quantile(0.95, sum(rate(django_http_requests_latency_seconds_bucket[5m])) by (le))- Performance
 
 ## 🔄 CI/CD Pipeline
 
@@ -269,7 +338,7 @@ The project includes a GitHub Actions pipeline that automatically:
 | DELETE | /api/tasks/<id>/ | Delete a task          |
 | GET    | /health/         | Health check           |
 | GET    | /admin/          | Django admin interface |
-
+| GET	 | /metrics	        | Prometheus metrics     |
 ---
 
 ## 📦 Current Status
@@ -285,6 +354,9 @@ The project includes a GitHub Actions pipeline that automatically:
 - Ingress routing with custom domain
 - CI/CD pipeline (GitHub Actions)
 - Docker Hub registry integration
+- Prometheus metrics collection
+- Grafana dashboards
+- ServiceMonitor configuration
 - Production-like debugging experience
 
 ---
@@ -298,17 +370,14 @@ The project includes a GitHub Actions pipeline that automatically:
 - Helm secret ownership conflicts
 - Ingress 503 service routing
 - Service port mismatches
+- Prometheus ServiceMonitor discovery
 
 ---
 
 ## 🔜 Next Steps
 
 ### 📊 Observability
-
-- Prometheus (metrics)
-- Grafana (dashboards)
 - Loki (logs)
-- Jaeger tracing
 
 ### ⚙️ Production Hardening
 
@@ -354,7 +423,7 @@ Package Management (Helm)
     ↓
 CI/CD Automation
     ↓
-Observability (Coming)
+Observability (Prometheus + Grafana)
     ↓
 Production Readiness
 ```
@@ -391,6 +460,24 @@ helm template django-app ./helm/django-app --debug
 
 # List releases
 helm list
+```
+
+### Prometheus & Grafana
+```bash
+# Port-forward Prometheus
+kubectl port-forward svc/monitoring-kube-prometheus-prometheus 9090
+
+# Port-forward Grafana
+kubectl port-forward svc/monitoring-grafana 3000:80
+
+# Get Grafana password
+kubectl get secret monitoring-grafana -o jsonpath="{.data.admin-password}" | base64 --decode
+
+# Check ServiceMonitor
+kubectl get servicemonitor django-monitor -o yaml
+
+# View Prometheus targets
+# Open: http://localhost:9090/targets
 ```
 
 ### Kubernetes Debugging
